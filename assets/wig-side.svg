@@ -1,0 +1,19 @@
+<svg width="760" height="760" viewBox="0 0 760 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="760" rx="32" fill="#FFF8F0"/>
+  <ellipse cx="390" cy="728" rx="136" ry="28" fill="#EED9C8"/>
+  <path d="M277 598C277 492.514 362.514 407 468 407H470C575.486 407 661 492.514 661 598V760H277V598Z" fill="#FFFEFC"/>
+  <path d="M208 450C208 269.955 353.955 124 534 124H546C726.045 124 872 269.955 872 450V494H208V450Z" fill="#F1DEBF"/>
+  <path d="M164 438C164 305.452 271.452 198 404 198H478C610.548 198 718 305.452 718 438V472C718 489.673 703.673 504 686 504H196C178.327 504 164 489.673 164 472V438Z" fill="#F7E7CA"/>
+  <path d="M182 430C182 285.323 299.323 168 444 168H452C596.677 168 714 285.323 714 430V444H182V430Z" fill="#EFD6A8"/>
+  <ellipse cx="420" cy="462" rx="162" ry="180" fill="#FFFEFD"/>
+  <path d="M292 264C292 230.863 318.863 204 352 204H488C521.137 204 548 230.863 548 264V300H292V264Z" fill="#FF6A00"/>
+  <path d="M292 294H550V338C550 366.719 526.719 390 498 390H344C315.281 390 292 366.719 292 338V294Z" fill="#F47B20"/>
+  <text x="420" y="334" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="28" font-weight="700">Wij zijn Nederland</text>
+  <path d="M264 208C284 170.667 317.333 144 364 128C430 105.333 483.333 104 524 124C571.333 147.333 604 179.333 622 220C564.667 176.667 497.333 155 420 155C362.667 155 310.667 172.667 264 208Z" fill="#F4E3C4"/>
+  <path d="M286 212C316 192.667 359.333 183 416 183C471.333 183 531.333 203.333 596 244" stroke="#D9B37A" stroke-width="11" stroke-linecap="round"/>
+  <path d="M258 470C262.667 451.333 273.333 432.667 290 414" stroke="#D4A876" stroke-width="11" stroke-linecap="round"/>
+  <path d="M300 514C322.667 498 346 490 370 490" stroke="#D4A876" stroke-width="10" stroke-linecap="round"/>
+  <rect x="332" y="416" width="86" height="23" rx="11.5" fill="#D92A24"/>
+  <rect x="330" y="455" width="86" height="23" rx="11.5" fill="#2350A4"/>
+  <path d="M514 210C557.333 232.667 588.333 264.333 607 305C618.333 329.667 624 360.333 624 397C624 451.667 606.667 500.667 572 544" stroke="#D6AF79" stroke-width="13" stroke-linecap="round"/>
+</svg>
