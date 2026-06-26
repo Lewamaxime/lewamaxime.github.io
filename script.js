@@ -17,8 +17,6 @@ const modal = document.getElementById("video-modal");
 const promoVideo = document.getElementById("promo-video");
 const quantityEl = document.getElementById("quantity");
 const mainImage = document.getElementById("main-product-image");
-let reverseInterval = null;
-let playbackDirection = 1;
 const statTargets = {
   pageviews: document.getElementById("stat-pageviews"),
   clicks: document.getElementById("stat-clicks"),
@@ -41,10 +39,18 @@ function writeStats(stats) {
 
 function renderStats() {
   const stats = readStats();
-  statTargets.pageviews.textContent = stats.pageviews;
-  statTargets.clicks.textContent = stats.clicks;
-  statTargets.videoOpens.textContent = stats.videoOpens;
-  statTargets.ctaClicks.textContent = stats.ctaClicks;
+  if (statTargets.pageviews) {
+    statTargets.pageviews.textContent = stats.pageviews;
+  }
+  if (statTargets.clicks) {
+    statTargets.clicks.textContent = stats.clicks;
+  }
+  if (statTargets.videoOpens) {
+    statTargets.videoOpens.textContent = stats.videoOpens;
+  }
+  if (statTargets.ctaClicks) {
+    statTargets.ctaClicks.textContent = stats.ctaClicks;
+  }
 }
 
 function bumpStat(key, amount = 1) {
@@ -63,51 +69,37 @@ function track(eventName, detail = {}) {
     window.gtag("event", eventName, detail);
   }
 
+  if (window.goatcounter && typeof window.goatcounter.count === "function") {
+    window.goatcounter.count({
+      path: location.pathname,
+      event: true,
+      title: `${eventName}:${detail.target || detail.image || detail.source || "site"}`
+    });
+  }
+
   console.info("[WK-pruik tracking]", eventName, detail);
 }
 
-function clearReverseLoop() {
-  if (reverseInterval) {
-    window.clearInterval(reverseInterval);
-    reverseInterval = null;
-  }
-}
-
-function startForwardPlayback() {
-  clearReverseLoop();
-  playbackDirection = 1;
-  promoVideo.playbackRate = 1;
-  promoVideo.play().catch(() => {});
-}
-
-function startReversePlayback() {
-  clearReverseLoop();
-  playbackDirection = -1;
-  promoVideo.pause();
-
-  reverseInterval = window.setInterval(() => {
-    const nextTime = Math.max(0, promoVideo.currentTime - 0.04);
-    promoVideo.currentTime = nextTime;
-
-    if (nextTime <= 0.04) {
-      startForwardPlayback();
-    }
-  }, 40);
-}
-
 function openModal(source = "unknown") {
+  if (!modal || !promoVideo) {
+    return;
+  }
+
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
   promoVideo.currentTime = 0;
-  startForwardPlayback();
+  promoVideo.play().catch(() => {});
   bumpStat("videoOpens");
   track("video_open", { source });
 }
 
 function closeModal() {
+  if (!modal || !promoVideo) {
+    return;
+  }
+
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
-  clearReverseLoop();
   promoVideo.pause();
   promoVideo.currentTime = 0;
 }
@@ -128,38 +120,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.querySelectorAll("[data-image]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const imageKey = button.dataset.image;
-      mainImage.src = imageMap[imageKey];
-      document.querySelectorAll(".thumb").forEach((thumb) => thumb.classList.remove("is-active"));
-      button.classList.add("is-active");
-      bumpStat("clicks");
-      track("gallery_select", { image: imageKey });
-    });
-  });
+  document.addEventListener("click", (event) => {
+    const quantityButton = event.target.closest("[data-quantity]");
+    if (quantityButton) {
+      event.preventDefault();
+      event.stopPropagation();
 
-  document.querySelectorAll("[data-video-trigger]").forEach((element) => {
-    element.addEventListener("click", () => {
-      bumpStat("clicks");
-      const name = element.dataset.track || "generic_click";
-      track("element_click", { target: name });
-      openModal(name);
-
-      if (name.startsWith("cta-")) {
-        bumpStat("ctaClicks");
+      if (!quantityEl) {
+        return;
       }
-    });
-  });
 
-  document.querySelectorAll("[data-quantity]").forEach((button) => {
-    button.addEventListener("click", () => {
       const current = Number(quantityEl.textContent);
-      const next = Math.max(1, current + Number(button.dataset.quantity));
+      const next = Math.max(1, current + Number(quantityButton.dataset.quantity));
       quantityEl.textContent = String(next);
       bumpStat("clicks");
       track("quantity_change", { value: next });
-    });
+      return;
+    }
+
+    const closeButton = event.target.closest("[data-close-modal]");
+    if (closeButton) {
+      event.preventDefault();
+      closeModal();
+      return;
+    }
+
+    const trigger = event.target.closest("[data-video-trigger]");
+    if (!trigger) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const imageKey = trigger.dataset.image;
+    if (imageKey) {
+      if (mainImage && imageMap[imageKey]) {
+        mainImage.src = imageMap[imageKey];
+      }
+
+      document.querySelectorAll(".thumb").forEach((thumb) => thumb.classList.remove("is-active"));
+      trigger.classList.add("is-active");
+      track("gallery_select", { image: imageKey });
+    }
+
+    bumpStat("clicks");
+    const name = trigger.dataset.track || "generic_click";
+    track("element_click", { target: name });
+
+    if (name.startsWith("cta-")) {
+      bumpStat("ctaClicks");
+    }
+
+    openModal(name);
   });
 
   document.querySelectorAll("[data-close-modal]").forEach((button) => {
@@ -172,15 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  promoVideo.addEventListener("timeupdate", () => {
-    if (playbackDirection === 1 && promoVideo.duration && promoVideo.currentTime >= promoVideo.duration - 0.08) {
-      startReversePlayback();
-    }
-  });
-
-  document.getElementById("reset-stats").addEventListener("click", () => {
-    writeStats({ ...statsDefaults });
-    renderStats();
-    track("stats_reset");
-  });
+  const resetStatsButton = document.getElementById("reset-stats");
+  if (resetStatsButton) {
+    resetStatsButton.addEventListener("click", () => {
+      writeStats({ ...statsDefaults });
+      renderStats();
+      track("stats_reset");
+    });
+  }
 });
